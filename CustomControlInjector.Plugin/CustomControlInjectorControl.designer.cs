@@ -35,7 +35,6 @@
             this.selectBPF = new System.Windows.Forms.Label();
             this.loadBPF = new System.Windows.Forms.Button();
             this.loadBPFDetails = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
             this.entityComboBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -113,15 +112,6 @@
             this.loadBPFDetails.Text = "Load";
             this.loadBPFDetails.UseVisualStyleBackColor = true;
             this.loadBPFDetails.Click += new System.EventHandler(this.loadBPFDetails_Click);
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(77, 455);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(619, 31);
-            this.button1.TabIndex = 6;
-            this.button1.Text = "Load Business Process Flows";
-            this.button1.UseVisualStyleBackColor = true;
             // 
             // entityComboBox
             // 
@@ -257,7 +247,6 @@
             this.Controls.Add(this.copyTabletButton);
             this.Controls.Add(this.copyPhoneButton);
             this.Controls.Add(this.copyWebButton);
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.loadBPF);
             this.Controls.Add(this.toolStripMenu);
             this.Name = "CustomControlInjectorControl";
@@ -278,7 +267,6 @@
         private System.Windows.Forms.Label selectBPF;
         private System.Windows.Forms.Button loadBPF;
         private System.Windows.Forms.Button loadBPFDetails;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ComboBox entityComboBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;

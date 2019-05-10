@@ -228,7 +228,7 @@ namespace CustomControlInjector.Plugin
                         MetaData = Service.GetEntityMetadata(logicalName)
                     };
 
-                    var systemFormRequest = new QueryExpression("systemform") {ColumnSet = new ColumnSet("formxml")};
+                    var systemFormRequest = new QueryExpression("systemform") {ColumnSet = new ColumnSet("name", "formxml") };
                     systemFormRequest.Criteria.AddCondition("type", ConditionOperator.Equal, 2);
                     systemFormRequest.Criteria.AddCondition("objecttypecode", ConditionOperator.Equal, logicalName);
                     result.FormResponse = Service.RetrieveMultiple(systemFormRequest);
@@ -273,22 +273,24 @@ namespace CustomControlInjector.Plugin
                                         {
                                             matchingFieldHelper = new ExistingCustomControlsFieldHelper()
                                             {
-                                                DataFieldName = matchingControl?.Attribute("datafieldname")?.Value,
+                                                DataFieldName = matchingControl?.Attribute("datafieldname")?.Value + " (" + form.GetAttributeValue<string>("name") + ")",
                                                 FieldId = forControl,
 
                                             };
                                             helper.ExistingCustomControlFields.Add(matchingFieldHelper);
                                         }
 
-                                        var existingControlConfig = new ExistingCustomControlsConfigHelper
+                                        if (matchingFieldHelper.CustomControlFields.All(c => c.Name != customControl.Value))
                                         {
-                                            Name = customControl.Value,
-                                            FormFactor = control.Attribute("formFactor")?.Value,
-                                            Parameters = control.Descendants("parameters").FirstOrDefault(),
-                                            FormId = form.Id
-                                        };
-
-                                        matchingFieldHelper.CustomControlFields.Add(existingControlConfig);
+                                            var existingControlConfig = new ExistingCustomControlsConfigHelper
+                                            {
+                                                Name = customControl.Value,
+                                                FormFactor = control.Attribute("formFactor")?.Value,
+                                                Parameters = control.Descendants("parameters").FirstOrDefault(),
+                                                FormId = form.Id
+                                            };
+                                            matchingFieldHelper.CustomControlFields.Add(existingControlConfig);
+                                        }
                                     }
                                 }
                             }
@@ -312,22 +314,6 @@ namespace CustomControlInjector.Plugin
             entityComboBox.Enabled = true;
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            var systemFormRequest = new QueryExpression("systemform") {ColumnSet = new ColumnSet("formxml")};
-            systemFormRequest.Criteria.AddCondition("type", ConditionOperator.Equal, 2);
-            systemFormRequest.Criteria.AddCondition("objecttypecode", ConditionOperator.Equal, "lead");
-            var systemFormResp = Service.RetrieveMultiple(systemFormRequest);
-
-            var filteredFormsRequest = new RetrieveFilteredFormsRequest
-            {
-                EntityLogicalName = "opportunity",
-                FormType = new OptionSetValue(2)
-            };
-
-            var response = (RetrieveFilteredFormsResponse)Service.Execute(filteredFormsRequest);
-        }
-
         private void entityComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedItem = (ComboBoxItem)entityComboBox.SelectedItem;
@@ -348,6 +334,7 @@ namespace CustomControlInjector.Plugin
             var selectedItem = (ComboBoxItem)fieldsComboBox.SelectedItem;
             var existingControls = (List<ExistingCustomControlsConfigHelper>)selectedItem.Value;
 
+            customControlComboBox.Items.Clear();
             foreach (var existingControl in existingControls)
             {
                 var item = new ComboBoxItem(existingControl.Name, existingControl);
@@ -448,10 +435,6 @@ namespace CustomControlInjector.Plugin
                     controlElement.Add(config.Parameters);
 
                     controlDescriptionElement.Add(controlElement);
-                }
-                else
-                {
-
                 }
             }
 
