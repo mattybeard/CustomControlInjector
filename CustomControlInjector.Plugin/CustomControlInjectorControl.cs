@@ -157,14 +157,20 @@ namespace CustomControlInjector.Plugin
                         EntityLogicalName = bpfName,
                         FormType = new OptionSetValue(2)
                     };
+                    //var resp = Service.GetEntityMetadata(bpfName);
 
-                    args.Result = (RetrieveFilteredFormsResponse) Service.Execute(filteredFormsRequest);
+                    args.Result = Service.Execute(filteredFormsRequest);
                 },
                 PostWorkCallBack = (args) =>
                 {
                     if (args.Error != null)
                     {
                         MessageBox.Show(args.Error.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                    if (args.Result is EntityMetadata result1)
+                    {
+
                     }
 
                     if (args.Result is RetrieveFilteredFormsResponse result)
@@ -184,13 +190,20 @@ namespace CustomControlInjector.Plugin
                                 foreach (var control in controls)
                                 {
                                     var fieldId = control.FirstAttribute.Value;
-                                    var entityName = fieldId.Substring(4, fieldId.IndexOf($"_{bpfName}", StringComparison.InvariantCultureIgnoreCase) - 4);
-                                    if (!EntityTypes.Contains(entityName))
-                                        EntityTypes.Add(entityName);
+                                    if (fieldId == "bpf_name")
+                                    {
+                                        // Handle legacy - need to press "UPDATE"
+                                    }
+                                    else
+                                    {
+                                        var entityName = fieldId.Substring(4, fieldId.IndexOf($"_{bpfName}", StringComparison.InvariantCultureIgnoreCase) - 4);
+                                        if (!EntityTypes.Contains(entityName))
+                                            EntityTypes.Add(entityName);
 
-                                    var dataFieldName = control.Attribute("datafieldname")?.Value;
-                                    if(!string.IsNullOrEmpty(dataFieldName) && !BpfFieldNames.Contains(dataFieldName))
-                                        BpfFieldNames.Add(dataFieldName);
+                                        var dataFieldName = control.Attribute("datafieldname")?.Value;
+                                        if (!string.IsNullOrEmpty(dataFieldName) && !BpfFieldNames.Contains(dataFieldName))
+                                            BpfFieldNames.Add(dataFieldName);
+                                    }
                                 }
                             }
                         }
