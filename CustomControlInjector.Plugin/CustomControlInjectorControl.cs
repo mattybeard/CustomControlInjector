@@ -157,8 +157,6 @@ namespace CustomControlInjector.Plugin
                         EntityLogicalName = bpfName,
                         FormType = new OptionSetValue(2)
                     };
-                    //var resp = Service.GetEntityMetadata(bpfName);
-
                     args.Result = Service.Execute(filteredFormsRequest);
                 },
                 PostWorkCallBack = (args) =>
@@ -168,17 +166,12 @@ namespace CustomControlInjector.Plugin
                         MessageBox.Show(args.Error.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
-                    if (args.Result is EntityMetadata result1)
-                    {
-
-                    }
-
                     if (args.Result is RetrieveFilteredFormsResponse result)
                     {
                         var filteredFormsResponse = result;
                         foreach (var form in filteredFormsResponse.SystemForms)
                         {
-                            var response = Service.Retrieve(form.LogicalName, form.Id, new ColumnSet(true));
+                            var response = Service.Retrieve(form.LogicalName, form.Id, new ColumnSet("formxml"));
                             var formXml = response.GetAttributeValue<string>("formxml");
                             BpfId = form.Id;
 
@@ -241,7 +234,7 @@ namespace CustomControlInjector.Plugin
                         MetaData = Service.GetEntityMetadata(logicalName)
                     };
 
-                    var systemFormRequest = new QueryExpression("systemform") {ColumnSet = new ColumnSet("name", "formxml") };
+                    var systemFormRequest = new QueryExpression("systemform") {ColumnSet = new ColumnSet("name", "formxml")};
                     systemFormRequest.Criteria.AddCondition("type", ConditionOperator.Equal, 2);
                     systemFormRequest.Criteria.AddCondition("objecttypecode", ConditionOperator.Equal, logicalName);
                     result.FormResponse = Service.RetrieveMultiple(systemFormRequest);
@@ -329,8 +322,8 @@ namespace CustomControlInjector.Plugin
 
         private void entityComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedItem = (ComboBoxItem)entityComboBox.SelectedItem;
-            var matchingHelper = ExistingCustomControls.First(en => en.LogicalName == (string)selectedItem.Value);
+            var selectedItem = (ComboBoxItem) entityComboBox.SelectedItem;
+            var matchingHelper = ExistingCustomControls.First(en => en.LogicalName == (string) selectedItem.Value);
 
             fieldsComboBox.Items.Clear();
             foreach (var field in matchingHelper.ExistingCustomControlFields)
@@ -344,8 +337,8 @@ namespace CustomControlInjector.Plugin
 
         private void fieldsComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedItem = (ComboBoxItem)fieldsComboBox.SelectedItem;
-            var existingControls = (List<ExistingCustomControlsConfigHelper>)selectedItem.Value;
+            var selectedItem = (ComboBoxItem) fieldsComboBox.SelectedItem;
+            var existingControls = (List<ExistingCustomControlsConfigHelper>) selectedItem.Value;
 
             customControlComboBox.Items.Clear();
             foreach (var existingControl in existingControls)
@@ -359,33 +352,37 @@ namespace CustomControlInjector.Plugin
 
         private void copyAllButton_Click(object sender, EventArgs e)
         {
-            CopyCustomControl(new []{0,1,2});
+            CopyCustomControl(new[] {0, 1, 2});
         }
 
         private void copyPhoneButton_Click(object sender, EventArgs e)
         {
+            CopyCustomControl(new[] {0});
         }
 
         private void copyTabletButton_Click(object sender, EventArgs e)
         {
+            CopyCustomControl(new[] {1});
         }
+
         private void copyWebButton_Click(object sender, EventArgs e)
         {
+            CopyCustomControl(new[] {2});
         }
 
         private void CopyCustomControl(int[] formFactors)
         {
             var uniqueId = Guid.NewGuid();
 
-            var customControlItem = (ComboBoxItem)customControlComboBox.SelectedItem;
+            var customControlItem = (ComboBoxItem) customControlComboBox.SelectedItem;
             var config = (ExistingCustomControlsConfigHelper) customControlItem.Value;
 
             var mappedField = (string) bpfFieldList.SelectedItem;
-            var selectedItem = (ComboBoxItem)entityComboBox.SelectedItem;
-            var matchingHelper = ExistingCustomControls.First(en => en.LogicalName == (string)selectedItem.Value);
+            var selectedItem = (ComboBoxItem) entityComboBox.SelectedItem;
+            var matchingHelper = ExistingCustomControls.First(en => en.LogicalName == (string) selectedItem.Value);
             var matchingField = matchingHelper.ExistingCustomControlFields.FirstOrDefault(f => f.DataFieldName == mappedField);
 
-            if(matchingField != null)
+            if (matchingField != null)
                 uniqueId = new Guid(matchingField.FieldId);
 
             var existingControls = BpfFullXml.Descendants("control").ToList();
@@ -405,7 +402,7 @@ namespace CustomControlInjector.Plugin
                 if (!string.IsNullOrEmpty(existingControl.Attribute("datafieldname")?.Value) &&
                     existingControl.Attribute("datafieldname")?.Value == mappedField)
                 {
-                    if(existingControl.Attribute("uniqueid") == null)
+                    if (existingControl.Attribute("uniqueid") == null)
                     {
                         existingControl.Add(new XAttribute("uniqueid", uniqueId.ToString("B")));
                     }
@@ -418,7 +415,7 @@ namespace CustomControlInjector.Plugin
 
             var existingControlDescriptions = BpfFullXml.Elements("controlDescription");
             var matchingControlDescriptions = existingControlDescriptions.Where(c =>
-                !string.IsNullOrEmpty(c.Attribute("uniqueid")?.Value) && 
+                !string.IsNullOrEmpty(c.Attribute("uniqueid")?.Value) &&
                 c.Attribute("uniqueid")?.Value == uniqueId.ToString("B")).ToList();
 
             if (matchingControlDescriptions.Any())
@@ -429,7 +426,7 @@ namespace CustomControlInjector.Plugin
                 }
             }
 
-            if(BpfFullXml.Element("controlDescriptions") == null)
+            if (BpfFullXml.Element("controlDescriptions") == null)
                 BpfFullXml.Add(new XElement("controlDescriptions"));
 
             var controlDescriptionsElement = BpfFullXml.Element("controlDescriptions");
@@ -454,6 +451,32 @@ namespace CustomControlInjector.Plugin
             var systemFormEntity = Service.Retrieve("systemform", BpfId, new ColumnSet("formxml"));
             systemFormEntity["formxml"] = BpfFullXml.ToString();
             Service.Update(systemFormEntity);
+        }
+
+        private void PublishAll()
+        {
+            WorkAsync(new WorkAsyncInfo
+            {
+                Message = $"Publishing all customizations",
+                Work = (worker, args) =>
+                {
+                    var publishAllReq = new PublishAllXmlRequest();
+                    args.Result = Service.Execute(publishAllReq);
+
+                },
+                PostWorkCallBack = (args) =>
+                {
+                    if (args.Result is PublishAllXmlResponse)
+                    {
+                        MessageBox.Show("Publish All Completed");
+                    }
+                }
+            });
+        }
+
+        private void publishAllButton_Click(object sender, EventArgs e)
+        {
+            PublishAll();
         }
     }
 }

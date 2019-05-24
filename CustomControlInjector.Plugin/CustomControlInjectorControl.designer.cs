@@ -47,6 +47,7 @@
             this.copyPhoneButton = new System.Windows.Forms.Button();
             this.copyTabletButton = new System.Windows.Forms.Button();
             this.copyAllButton = new System.Windows.Forms.Button();
+            this.publishAllButton = new System.Windows.Forms.Button();
             this.toolStripMenu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -228,6 +229,16 @@
             this.copyAllButton.UseVisualStyleBackColor = true;
             this.copyAllButton.Click += new System.EventHandler(this.copyAllButton_Click);
             // 
+            // publishAllButton
+            // 
+            this.publishAllButton.Location = new System.Drawing.Point(44, 368);
+            this.publishAllButton.Name = "publishAllButton";
+            this.publishAllButton.Size = new System.Drawing.Size(657, 31);
+            this.publishAllButton.TabIndex = 6;
+            this.publishAllButton.Text = "Publish All";
+            this.publishAllButton.UseVisualStyleBackColor = true;
+            this.publishAllButton.Click += new System.EventHandler(this.publishAllButton_Click);
+            // 
             // CustomControlInjectorControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -243,6 +254,7 @@
             this.Controls.Add(this.bpfFieldList);
             this.Controls.Add(this.bpfList);
             this.Controls.Add(this.loadBPFDetails);
+            this.Controls.Add(this.publishAllButton);
             this.Controls.Add(this.copyAllButton);
             this.Controls.Add(this.copyTabletButton);
             this.Controls.Add(this.copyPhoneButton);
@@ -279,5 +291,6 @@
         private System.Windows.Forms.Button copyPhoneButton;
         private System.Windows.Forms.Button copyTabletButton;
         private System.Windows.Forms.Button copyAllButton;
+        private System.Windows.Forms.Button publishAllButton;
     }
 }
